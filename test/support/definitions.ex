@@ -8,7 +8,7 @@ defmodule DummyDefBase do
       def filename(_, {file, :private}), do: file.file_name
       def filename(_, {_, name}) when is_binary(name), do: name
 
-      def storage_dir(_, _), do: "arc-test"
+      def storage_dir(_, _), do: "waffle-test"
 
       defoverridable [acl: 2, filename: 2, storage_dir: 2]
     end

@@ -5,7 +5,7 @@ defmodule Waffle.Storage.Google.CloudStorageTest do
 
   @file_name "image.png"
   @file_path "test/support/#{@file_name}"
-  @remote_dir "arc-test"
+  @remote_dir "waffle-test"
 
   def env_bucket(), do: System.get_env("WAFFLE_BUCKET")
 
@@ -22,6 +22,19 @@ defmodule Waffle.Storage.Google.CloudStorageTest do
       version: :original,
       meta: {file, name},
     }
+  end
+
+  def cleanup(_) do
+    # We should prefer, for performance reasons, to cleanup the bucket once
+    # after all tests have run, but `after_suite/1` is only available starting
+    # with Elixir version 1.8.0. Therefore, previous versions need to use the
+    # `on_exit/1` function to register a callback that executes after each
+    # individual test runs.
+    if Version.compare(System.version(), "1.8.0") == :lt do
+      on_exit(fn -> IO.puts("Cleanup invokved (#{inspect self()})") end)
+    else
+      :ok
+    end
   end
 
   describe "conn/1" do
