@@ -1,5 +1,7 @@
 # Waffle GCS
 
+[![Build Status](https://travis-ci.org/kolorahl/waffle_gcs.svg?branch=master)](https://travis-ci.org/kolorahl/waffle_gcs)
+
 Google Cloud Storage for Waffle
 
 ## What's Waffle?
