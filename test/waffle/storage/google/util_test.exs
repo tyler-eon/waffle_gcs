@@ -70,32 +70,19 @@ defmodule Waffle.Storage.Google.UtilTest do
     end
   end
 
-  describe "build_binary_body/2" do
-    test "returns a Tesla.Multipart with binary file contents and metadata" do
-      bin = "this is some test content"
-      meta = %{name: "test.txt", acl: :publicread}
-      json = Poison.encode!(meta)
-      assert %Tesla.Multipart{
-        parts: parts
-      } = Util.build_binary_body(meta, bin)
-      assert [
-        %Tesla.Multipart.Part{body: ^json},
-        %Tesla.Multipart.Part{body: ^bin},
-      ] = parts
-    end
-  end
-
-  describe "storage_objects_insert_binary/4" do
+  describe "storage_objects_insert/4" do
     test "uploads raw binary data to a Google Cloud Storage bucket" do
       conn = CloudStorage.conn()
       bucket = CloudStorage.bucket(DummyDefinition)
       name = "test.txt"
       bin  = "this is a test"
-      assert {:ok, _} = Util.storage_objects_insert_binary(
+      assert {:ok, _} = Util.storage_objects_insert(
         conn,
         bucket,
-        %{name: name, acl: :private},
-        bin
+        [
+          body: bin,
+          name: name,
+        ]
       )
       assert {:ok, _} = GoogleApi.Storage.V1.Api.Objects.storage_objects_get(
         conn,

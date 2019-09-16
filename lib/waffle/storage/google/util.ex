@@ -62,62 +62,53 @@ defmodule Waffle.Storage.Google.Util do
   def prepend_slash(path), do: "/#{path}"
 
   @doc """
-  For some reason, the Elixir library for Google Cloud Storage **DOES NOT**
-  support binary data uploads. Their code always assumes that a path to a file
-  is being passed to it and constructs the request as such. More infuriating is
-  that Tesla, the HTTP library being used to make these requests, converts file
-  paths to binary streams anyway, so adding the data to a temporary file would
-  add additional steps. Specifically, we'd be doing the following:
-
-  1. Receive binary data (maybe from a stream).
-  2. Write the binary data to a temporary file.
-  3. Tesla opens the temporary file as a stream.
-  4. The request is made.
-  5. Delete the temporary file.
-
-  Internally, Google relies solely on `Tesla.Multipart.add_file/3` which creates
-  a stream from the given filepath and then calls
-  `Tesla.Multipart.add_file_content/3`. I have bypassed this step by creating a
-  multipart struct manually, adding the binary data with `add_file_content`, and
-  setting it to the request body. Fun fact: if you have no `file` param and your
-  `body` param has a single entry of `{:body, _}`, the Google connection will
-  use whatever the value is verbatim. We take advantage of that weird fact to
-  bypass their custom `build_body` logic.
+  The function `Objects.storage_objects_insert/4` has the wrong URL and will
+  always fail to perform an upload. Because these clients are automatically
+  generated, there needs to be an investigation as to why this URL is being
+  incorrectly set before a solution can be applied. This version of the function
+  is an exact copy/paste of the official function except that it uses the
+  correct upload URL.
   """
-  @spec storage_objects_insert_binary(
+  @spec storage_objects_insert(
     Tesla.Env.client,
     String.t,
-    Object.t,
-    String.t
+    Keyword.t,
+    Keyword.t
   ) :: Waffle.Storage.Google.CloudStorage.object_or_error
-  def storage_objects_insert_binary(connection, bucket, metadata, bin) do
-      request = Request.new()
+  def storage_objects_insert(connection, bucket, optional_params \\ [], opts \\ []) do
+    optional_params_config = %{
+      :alt => :query,
+      :fields => :query,
+      :key => :query,
+      :oauth_token => :query,
+      :prettyPrint => :query,
+      :quotaUser => :query,
+      :userIp => :query,
+      :contentEncoding => :query,
+      :ifGenerationMatch => :query,
+      :ifGenerationNotMatch => :query,
+      :ifMetagenerationMatch => :query,
+      :ifMetagenerationNotMatch => :query,
+      :kmsKeyName => :query,
+      :name => :query,
+      :predefinedAcl => :query,
+      :projection => :query,
+      :provisionalUserProject => :query,
+      :userProject => :query,
+      :body => :body
+    }
+
+    request =
+      Request.new()
       |> Request.method(:post)
       |> Request.url("/upload/storage/v1/b/{bucket}/o", %{
         "bucket" => URI.encode(bucket, &URI.char_unreserved?/1)
       })
-      |> Request.add_param(:query, :uploadType, "multipart")
-      |> Request.add_param(:body, :body, build_binary_body(metadata, bin))
+      |> Request.add_optional_params(optional_params_config, optional_params)
       |> Request.library_version(@library_version)
 
-      connection
-      |> Connection.execute(request)
-      |> Response.decode([struct: %Object{}])
-  end
-
-  @doc """
-  Builds a `Tesla.Multipart` structure containing two parts: a binary payload
-  and metadata about the binary payload. The `metadata` argument must be JSON
-  encodable, i.e. it must succeed when passed to `Poison.encode!/1`.
-  """
-  @spec build_binary_body(Object.t, String.t) :: Tesla.Multipart.t
-  def build_binary_body(metadata, bin) do
-      Tesla.Multipart.new()
-      |> Tesla.Multipart.add_field(
-        :metadata,
-        Poison.encode!(metadata),
-        headers: [{:"Content-Type", "application/json"}]
-      )
-      |> Tesla.Multipart.add_file_content(bin, :data)
+    connection
+    |> Connection.execute(request)
+    |> Response.decode(opts ++ [struct: %Object{}])
   end
 end
