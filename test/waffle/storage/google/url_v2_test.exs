@@ -18,13 +18,13 @@ defmodule Waffle.Storage.Google.UrlV2Test do
     end
   end
 
-  describe "signed_url?/1" do
+  describe "signed?/1" do
     test "returns the option value when found" do
-      assert UrlV2.signed_url?(signed_urls: true)
+      assert UrlV2.signed?(signed: true)
     end
 
     test "returns false as the default" do
-      assert false == UrlV2.signed_url?()
+      assert false == UrlV2.signed?()
     end
   end
 
