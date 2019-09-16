@@ -1,38 +1,38 @@
 language: elixir
-
-# Elixir + OTP compatibility: https://hexdocs.pm/elixir/master/compatibility-and-deprecations.html#compatibility-between-elixir-and-erlang-otp
 elixir:
-  - 1.4 # supports OTP 18-19 (and 20 with 1.4.5+)
-  - 1.5 # supports OTP 18-20
-  - 1.6 # supports OTP 19-20 (and 21 with v1.6.6+)
-  - 1.7 # supports OTP 19-22
-  - 1.8 # supports OTP 20-22
-  - 1.9 # supports OTP 20-22
-
+- 1.4
+- 1.5
+- 1.6
+- 1.7
+- 1.8
+- 1.9
 otp_release:
-  - 18.3
-  - 19.3
-  - 20.3
-  - 21.3
-  - 22.0
-
+- 18.3
+- 19.3
+- 20.3
+- 21.3
+- 22.0
 matrix:
   exclude:
-    - elixir: 1.4
-      otp_release: 20.3
-    - elixir: 1.4
-      otp_release: 21.3
-    - elixir: 1.4
-      otp_release: 22.0
-    - elixir: 1.5
-      otp_release: 21.3
-    - elixir: 1.5
-      otp_release: 22.0
-    - elixir: 1.6
-      otp_release: 21.3
-    - elixir: 1.6
-      otp_release: 22.0
-    - elixir: 1.8
-      otp_release: 19.3
-    - elixir: 1.9
-      otp_release: 19.3
+  - elixir: 1.4
+    otp_release: 20.3
+  - elixir: 1.4
+    otp_release: 21.3
+  - elixir: 1.4
+    otp_release: 22.0
+  - elixir: 1.5
+    otp_release: 21.3
+  - elixir: 1.5
+    otp_release: 22.0
+  - elixir: 1.6
+    otp_release: 21.3
+  - elixir: 1.6
+    otp_release: 22.0
+  - elixir: 1.8
+    otp_release: 19.3
+  - elixir: 1.9
+    otp_release: 19.3
+before_install:
+- openssl aes-256-cbc -K $encrypted_1fc90f464345_key -iv $encrypted_1fc90f464345_iv
+  -in config/waffle-gcs-test.json.enc -out config/waffle-gcs-test.json -d
+- export GCP_CREDENTIALS=`cat config/waffle-gcs-test.json`
