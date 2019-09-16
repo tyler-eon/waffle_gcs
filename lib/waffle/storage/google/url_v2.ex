@@ -3,6 +3,9 @@ defmodule Waffle.Storage.Google.UrlV2 do
   This is an implementation of the v2 URL signing for Google Cloud Storage. See
   [the Google documentation](https://cloud.google.com/storage/docs/access-control/signed-urls-v2)
   for more details.
+
+  The bulk of the major logic is taken from Martide's `arc_gcs` work:
+  https://github.com/martide/arc_gcs.
   """
 
   use Waffle.Storage.Google.Url

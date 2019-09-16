@@ -1,4 +1,8 @@
 defmodule Waffle.Storage.Google.Util do
+  @moduledoc """
+  A collection of utility functions.
+  """
+
   alias GoogleApi.Gax.{Request, Response}
   alias GoogleApi.Storage.V1.Connection
   alias GoogleApi.Storage.V1.Model.Object

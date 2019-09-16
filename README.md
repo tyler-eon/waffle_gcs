@@ -21,12 +21,13 @@ Waffle, then this library is for you.
 
 ## What's different from `arc_gcs`?
 
-The major two differences are:
+The major three differences are:
 
-1. Uses the official
+1. Transitions from `Arc` to `Waffle`.
+2. Uses the official
 [Google Cloud API client](https://hex.pm/packages/google_api_storage) for Elixir
 rather than constructing XML requests and sending them over HTTP.
-2. Implements the v4 URL signing process in addition to the existing v2 process.
+3. (In Progress) Implements the v4 URL signing process in addition to the existing v2 process.
 
 Because Google now officially builds client libraries for Elixir, it is more
 maintainable to use those libraries rather than relying on the older XML API.
@@ -34,3 +35,39 @@ The v2 URL signing process is also being deprecated in favor of the v4 process.
 Although Google will give plenty of advance notice if/when the v2 process is
 becoming unsupported, it's again more maintainable to use Google best practices
 to ensure future compatibility.
+
+## Installation
+
+Add it to your mix dependencies:
+
+```elixir
+defp deps do
+  [
+    ...,
+    {:waffle_gcs, "~> 0.1"}
+  ]
+end
+```
+
+## Configuration
+
+All configuration values are stored under the `:waffle` app key. E.g.
+
+```elixir
+config :waffle, bucket: "gcs-bucket", storage_dir: "uploads/waffle"
+```
+
+**Note**: a valid bucket name is a required config. This can either be a
+hard-coded string (e.g. `"gcs-bucket"`) or a system env tuple (e.g.
+`{:system, "WAFFLE_BUCKET"}`). You can also override this in your definition
+module (e.g. `def bucket(), do: "my-bucket"`).
+
+## URL Signing
+
+If your bucket/object permissions do not allow for public access, you will need
+to use signed URLs to give people access to the uploaded files. This is done by
+either passing `signed: true` to `CloudStorage.url/4` or by setting it in the
+configs (`config :waffle, signed: true`). The default expiration time is one
+hour but can be changed by setting the `:expires_in` config/option value. The
+value is **the number of seconds** the URL should remain valid for after
+generation.

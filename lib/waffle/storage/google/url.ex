@@ -1,13 +1,17 @@
 defmodule Waffle.Storage.Google.Url do
+  @moduledoc """
+  Defines an interface for generating Google Cloud Storage URLs.
+  """
+
   alias Waffle.Types
 
   @doc """
   Constructs a URL based on data from Waffle.
   """
   @callback build(
-    Types.definition,
-    Types.version,
-    Types.meta,
+    definition :: Types.definition,
+    version :: Types.version,
+    meta :: Types.meta,
     options :: Keyword.t
   ) :: String.t
 

@@ -1,7 +1,17 @@
 defmodule Waffle.Storage.Google.CloudStorage do
   @moduledoc """
-  This is a wrapper around calls to `Google.Api.Storage.V1` to simplify the
-  tasks of this library.
+  The main storage integration for Waffle, this acts primarily as a wrapper
+  around `Google.Api.Storage.V1`. To use this module with Waffle, simply set
+  your `:storage` config appropriately:
+
+  ```elixir
+  config :waffle, storage: Waffle.Storage.Google.CloudStorage
+  ```
+
+  Ensure you have a valid bucket set, either through the configs or as an
+  environment variable, otherwise all calls will fail. The credentials available
+  through `Goth` must have the appropriate level of access to the bucket,
+  otherwise some (or all) calls may fail.
   """
 
   @full_control_scope "https://www.googleapis.com/auth/devstorage.full_control"
