@@ -10,8 +10,8 @@ defmodule Waffle.Storage.Google.CloudStorageTest do
   def env_bucket(), do: System.get_env("WAFFLE_BUCKET")
 
   def random_name(_) do
-    name = 8 |> :crypto.strong_rand_bytes() |> Base.encode16() |> Kernel.<>(".png")
-    %{name: name, path: "#{@remote_dir}/#{name}"}
+    name = 8 |> :crypto.strong_rand_bytes() |> Base.encode16()
+    %{name: name, path: "#{@remote_dir}/#{name}.png"}
   end
 
   def create_wafile(_), do: %{wafile: Waffle.File.new(@file_path)}
@@ -59,8 +59,8 @@ defmodule Waffle.Storage.Google.CloudStorageTest do
       assert @remote_dir == CloudStorage.storage_dir(def, ver, meta)
     end
 
-    test "path_for/3 returns the file full path (storage directory plus filename)", %{definition: def, version: ver, meta: meta, name: name} do
-      assert "#{@remote_dir}/#{name}" == CloudStorage.path_for(def, ver, meta)
+    test "path_for/3 returns the file full path (storage directory plus filename)", %{definition: def, version: ver, meta: meta, path: path} do
+      assert path == CloudStorage.path_for(def, ver, meta)
     end
   end
 
@@ -72,7 +72,7 @@ defmodule Waffle.Storage.Google.CloudStorageTest do
     end
 
     test "put/3 uploads binary data", %{definition: def, version: ver, name: name} do
-      assert {:ok, _} = CloudStorage.put(def, ver, {%Waffle.File{binary: File.read!(@file_path)}, name})
+      assert {:ok, _} = CloudStorage.put(def, ver, {%Waffle.File{binary: File.read!(@file_path), file_name: "#{name}.png"}, name})
     end
 
     test "put/3 fails for an invalid file", %{version: ver, meta: meta} do

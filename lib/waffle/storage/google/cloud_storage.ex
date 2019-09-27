@@ -92,7 +92,15 @@ defmodule Waffle.Storage.Google.CloudStorage do
   def path_for(definition, version, meta) do
     definition
     |> storage_dir(version, meta)
-    |> Path.join(definition.filename(version, meta))
+    |> Path.join(fullname(definition, version, meta))
+  end
+
+  @doc """
+  A wrapper for `Waffle.Definition.Versioning.resolve_file_name/3`.
+  """
+  @spec fullname(Types.definition, Types.version, Types.meta) :: String.t
+  def fullname(definition, version, meta) do
+    Waffle.Definition.Versioning.resolve_file_name(definition, version, meta)
   end
 
   @spec data(Types.file) :: {:file | :binary, String.t}
