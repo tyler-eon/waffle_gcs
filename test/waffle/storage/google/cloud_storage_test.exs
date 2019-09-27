@@ -94,7 +94,10 @@ defmodule Waffle.Storage.Google.CloudStorageTest do
     end
 
     test "url/3 returns signed URLs (v2)", %{definition: def, version: ver, meta: meta} do
-      assert CloudStorage.url(def, ver, meta, [signed: true]) =~ "&Signature="
+      assert {:ok, _} = CloudStorage.put(def, ver, meta)
+      url = CloudStorage.url(def, ver, meta, [signed: true])
+      assert url =~ "&Signature="
+      assert {:ok, %{status_code: 200}} = HTTPoison.get(url)
     end
   end
 end

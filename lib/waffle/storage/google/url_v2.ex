@@ -79,12 +79,12 @@ defmodule Waffle.Storage.Google.UrlV2 do
 
   @spec build_signed_url(Types.definition, String.t, Keyword.t) :: String.t
   defp build_signed_url(definition, path, options) do
-    {:ok, client_id} = Goth.Config.get("client_email")
+    {:ok, client_id} = Goth.Config.get(:client_email)
 
     expiration = System.os_time(:second) + expiry(options)
 
     signature = definition
-    |> build_path(endpoint())
+    |> build_path(path)
     |> canonical_request(expiration)
     |> sign_request()
 
@@ -110,15 +110,7 @@ defmodule Waffle.Storage.Google.UrlV2 do
 
   @spec canonical_request(String.t, pos_integer) :: String.t
   defp canonical_request(resource, expiration) do
-    [
-      "GET",
-      "",
-      "",
-      expiration,
-      "",
-      resource,
-    ]
-    |> Enum.join("\n")
+    "GET\n\n\n#{expiration}\n#{resource}"
   end
 
   @spec sign_request(String.t) :: String.t
