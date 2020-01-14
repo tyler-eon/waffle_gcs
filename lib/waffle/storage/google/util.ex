@@ -61,21 +61,62 @@ defmodule Waffle.Storage.Google.Util do
   def prepend_slash("/" <> _rest = path), do: path
   def prepend_slash(path), do: "/#{path}"
 
+
+
   @doc """
-  The function `Objects.storage_objects_insert/4` has the wrong URL and will
-  always fail to perform an upload. Because these clients are automatically
-  generated, there needs to be an investigation as to why this URL is being
-  incorrectly set before a solution can be applied. This version of the function
-  is an exact copy/paste of the official function except that it uses the
-  correct upload URL.
+  Stores a new object and metadata.
+
+  ## Parameters
+
+  *   `connection` (*type:* `GoogleApi.Storage.V1.Connection.t`) - Connection to server
+  *   `bucket` (*type:* `String.t`) - Name of the bucket in which to store the new object. Overrides the provided object metadata's bucket value, if any.
+  *   `upload_type` (*type:* `String.t`) - Upload type. Must be "multipart".
+  *   `metadata` (*type:* `GoogleApi.Storage.V1.Model.Object.t`) - object metadata
+  *   `data` (*type:* `iodata`) - Content to upload, as a string or iolist
+  *   `optional_params` (*type:* `keyword()`) - Optional parameters
+      *   `:alt` (*type:* `String.t`) - Data format for the response.
+      *   `:fields` (*type:* `String.t`) - Selector specifying which fields to include in a partial response.
+      *   `:key` (*type:* `String.t`) - API key. Your API key identifies your project and provides you with API access, quota, and reports. Required unless you provide an OAuth 2.0 token.
+      *   `:oauth_token` (*type:* `String.t`) - OAuth 2.0 token for the current user.
+      *   `:prettyPrint` (*type:* `boolean()`) - Returns response with indentations and line breaks.
+      *   `:quotaUser` (*type:* `String.t`) - An opaque string that represents a user for quota purposes. Must not exceed 40 characters.
+      *   `:userIp` (*type:* `String.t`) - Deprecated. Please use quotaUser instead.
+      *   `:contentEncoding` (*type:* `String.t`) - If set, sets the contentEncoding property of the final object to this value. Setting this parameter is equivalent to setting the contentEncoding metadata property. This can be useful when uploading an object with uploadType=media to indicate the encoding of the content being uploaded.
+      *   `:ifGenerationMatch` (*type:* `String.t`) - Makes the operation conditional on whether the object's current generation matches the given value. Setting to 0 makes the operation succeed only if there are no live versions of the object.
+      *   `:ifGenerationNotMatch` (*type:* `String.t`) - Makes the operation conditional on whether the object's current generation does not match the given value. If no live object exists, the precondition fails. Setting to 0 makes the operation succeed only if there is a live version of the object.
+      *   `:ifMetagenerationMatch` (*type:* `String.t`) - Makes the operation conditional on whether the object's current metageneration matches the given value.
+      *   `:ifMetagenerationNotMatch` (*type:* `String.t`) - Makes the operation conditional on whether the object's current metageneration does not match the given value.
+      *   `:kmsKeyName` (*type:* `String.t`) - Resource name of the Cloud KMS key, of the form projects/my-project/locations/global/keyRings/my-kr/cryptoKeys/my-key, that will be used to encrypt the object. Overrides the object metadata's kms_key_name value, if any.
+      *   `:name` (*type:* `String.t`) - Name of the object. Required when the object metadata is not otherwise provided. Overrides the object metadata's name value, if any. For information about how to URL encode object names to be path safe, see Encoding URI Path Parts.
+      *   `:predefinedAcl` (*type:* `String.t`) - Apply a predefined set of access controls to this object.
+      *   `:projection` (*type:* `String.t`) - Set of properties to return. Defaults to noAcl, unless the object resource specifies the acl property, when it defaults to full.
+      *   `:provisionalUserProject` (*type:* `String.t`) - The project to be billed for this request if the target bucket is requester-pays bucket.
+      *   `:userProject` (*type:* `String.t`) - The project to be billed for this request. Required for Requester Pays buckets.
+  *   `opts` (*type:* `keyword()`) - Call options
+
+  ## Returns
+
+  *   `{:ok, %GoogleApi.Storage.V1.Model.Object{}}` on success
+  *   `{:error, info}` on failure
   """
   @spec storage_objects_insert(
-    Tesla.Env.client,
-    String.t,
-    Keyword.t,
-    Keyword.t
-  ) :: Waffle.Storage.Google.CloudStorage.object_or_error
-  def storage_objects_insert(connection, bucket, optional_params \\ [], opts \\ []) do
+          Tesla.Env.client(),
+          String.t(),
+          String.t(),
+          GoogleApi.Storage.V1.Model.Object.t(),
+          iodata,
+          keyword(),
+          keyword()
+        ) :: {:ok, GoogleApi.Storage.V1.Model.Object.t()} | {:error, Tesla.Env.t()}
+  def storage_objects_insert(
+        connection,
+        bucket,
+        upload_type,
+        %{name: name},
+        data,
+        optional_params \\ [],
+        opts \\ []
+      ) do
     optional_params_config = %{
       :alt => :query,
       :fields => :query,
@@ -94,8 +135,7 @@ defmodule Waffle.Storage.Google.Util do
       :predefinedAcl => :query,
       :projection => :query,
       :provisionalUserProject => :query,
-      :userProject => :query,
-      :body => :body
+      :userProject => :query
     }
 
     request =
@@ -104,11 +144,13 @@ defmodule Waffle.Storage.Google.Util do
       |> Request.url("/upload/storage/v1/b/{bucket}/o", %{
         "bucket" => URI.encode(bucket, &URI.char_unreserved?/1)
       })
+      |> Request.add_param(:query, :name, name)
+      |> Request.add_param(:body, :body, data)
       |> Request.add_optional_params(optional_params_config, optional_params)
       |> Request.library_version(@library_version)
 
     connection
     |> Connection.execute(request)
-    |> Response.decode(opts ++ [struct: %Object{}])
+    |> Response.decode(opts ++ [struct: %GoogleApi.Storage.V1.Model.Object{}])
   end
 end

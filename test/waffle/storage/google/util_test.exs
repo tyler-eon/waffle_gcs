@@ -79,10 +79,9 @@ defmodule Waffle.Storage.Google.UtilTest do
       assert {:ok, _} = Util.storage_objects_insert(
         conn,
         bucket,
-        [
-          body: bin,
-          name: name,
-        ]
+        "multipart",
+        %GoogleApi.Storage.V1.Model.Object{name: name},
+        bin
       )
       assert {:ok, _} = GoogleApi.Storage.V1.Api.Objects.storage_objects_get(
         conn,
