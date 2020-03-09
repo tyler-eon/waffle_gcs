@@ -17,6 +17,8 @@ end
 
 defmodule DummyDefinition do
   use DummyDefBase
+
+  def bucket({_file, _scope}), do: bucket()
 end
 
 defmodule DummyDefinitionInvalidBucket do

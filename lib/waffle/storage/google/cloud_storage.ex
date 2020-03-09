@@ -76,6 +76,12 @@ defmodule Waffle.Storage.Google.CloudStorage do
   def bucket(definition), do: Util.var(definition.bucket())
 
   @doc """
+  Returns the bucket for file uploads from scope.
+  """
+  @spec bucket(Types.definition, Types.meta) :: String.t
+  def bucket(definition, meta), do: Util.var(definition.bucket(meta))
+
+  @doc """
   Returns the storage directory **within a bucket** to store the file under.
   """
   @spec storage_dir(Types.definition, Types.version, Types.meta) :: String.t
