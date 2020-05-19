@@ -95,8 +95,13 @@ defmodule Waffle.Storage.Google.UrlV2 do
 
   @spec build_path(Types.definition, String.t) :: String.t
   defp build_path(definition, path) do
-    definition
-    |> bucket_and_path(path)
+    path = if endpoint() != @endpoint do
+      path
+    else
+      bucket_and_path(definition, path)
+    end
+
+    path
     |> Util.prepend_slash()
     |> URI.encode()
   end
