@@ -62,6 +62,34 @@ hard-coded string (e.g. `"gcs-bucket"`) or a system env tuple (e.g.
 `{:system, "WAFFLE_BUCKET"}`). You can also override this in your definition
 module (e.g. `def bucket(), do: "my-bucket"`).
 
+### Custom Token Generation ###
+
+By default, the credentials provided to Goth will be used to generate tokens.
+If you have multiple sets of credentials in Goth or otherwise need more control
+over token generation, you can define your own module:
+
+```elixir
+defmodule MyCredentials do
+  @behaviour Waffle.Storage.Google.TokenFetcher
+  @impl Waffle.Storage.Google.TokenFetcher
+  def get_token(scopes) when is_list(scopes), do: get_token(Enum.join(scopes, " "))
+  @impl Waffle.Storage.Google.TokenFetcher
+  def get_token(scope) when is_binary(scope) do
+    {:ok, token} = Goth.Token.for_scope({"my-user@my-gcs-account.com", scope})
+    token.token
+  end
+end
+```
+
+And configure it to use this new module instead of the default token generation:
+
+```elixir
+config :waffle,
+  storage: Waffle.Storage.Google,
+  bucket: "gcs-bucket-name",
+  token_fetcher: MyCredentials
+```
+
 ## URL Signing
 
 If your bucket/object permissions do not allow for public access, you will need

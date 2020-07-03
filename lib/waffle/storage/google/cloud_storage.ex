@@ -65,8 +65,10 @@ defmodule Waffle.Storage.Google.CloudStorage do
   """
   @spec conn(String.t) :: Tesla.Env.client
   def conn(scope \\ @full_control_scope) do
-    {:ok, token} = Goth.Token.for_scope(scope)
-    Connection.new(token.token)
+    token_store = Application.get_env(:waffle, :token_fetcher, Waffle.Storage.Google.Token.DefaultFetcher)
+
+    token_store.get_token(scope)
+    |> Connection.new()
   end
 
   @doc """
