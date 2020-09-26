@@ -37,7 +37,7 @@ defmodule Waffle.Storage.Google.CloudStorage.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:waffle, "~> 0.0.3"},
+      {:waffle, "~> 1.1"},
       {:goth, "~> 1.1"},
       {:google_api_storage, "~> 0.12"},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},

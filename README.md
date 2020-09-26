@@ -54,13 +54,18 @@ end
 All configuration values are stored under the `:waffle` app key. E.g.
 
 ```elixir
-config :waffle, bucket: "gcs-bucket", storage_dir: "uploads/waffle"
+config :waffle,
+  storage: Waffle.Storage.Google,
+  bucket: "gcs-bucket",
+  storage_dir: "uploads/waffle"
 ```
 
 **Note**: a valid bucket name is a required config. This can either be a
 hard-coded string (e.g. `"gcs-bucket"`) or a system env tuple (e.g.
 `{:system, "WAFFLE_BUCKET"}`). You can also override this in your definition
 module (e.g. `def bucket(), do: "my-bucket"`).
+
+Authentication is done through Goth which requires credentials (https://github.com/peburrows/goth#installation).
 
 ### Custom Token Generation ###
 
@@ -99,3 +104,15 @@ configs (`config :waffle, signed: true`). The default expiration time is one
 hour but can be changed by setting the `:expires_in` config/option value. The
 value is **the number of seconds** the URL should remain valid for after
 generation.
+
+## GCS object headers
+
+You can specify custom object headers by defining `gcs_object_headers/2` in your definition which returns keyword list or map. E.g.
+
+```
+def gcs_object_headers(_version, {_file, _scope}) do
+  [contentType: "image/jpeg"]
+end
+```
+
+The list of all the supported attributes can be found here: https://hexdocs.pm/google_api_storage/GoogleApi.Storage.V1.Model.Object.html.
