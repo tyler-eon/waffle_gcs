@@ -116,3 +116,15 @@ end
 ```
 
 The list of all the supported attributes can be found here: https://hexdocs.pm/google_api_storage/GoogleApi.Storage.V1.Model.Object.html.
+
+## GCS optional params
+
+You can specify optional params by defining `gcs_optional_params/2` in your definition, which returns keywords list, E.g:
+
+```
+def gcs_optional_params(_version, {_file, _scope}) do
+  [predefinedAcl: "publicRead"]
+end
+```
+
+It will be used as `optional_params` argument in gcs request. List of all supported attributes can be found here: https://hexdocs.pm/google_api_storage/GoogleApi.Storage.V1.Api.Objects.html#storage_objects_insert_simple/7
