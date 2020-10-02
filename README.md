@@ -44,7 +44,7 @@ Add it to your mix dependencies:
 defp deps do
   [
     ...,
-    {:waffle_gcs, "git: "https://github.com/almirsarajcic/waffle_gcs"}
+    {:waffle_gcs, git: "https://github.com/almirsarajcic/waffle_gcs"}
   ]
 end
 ```
