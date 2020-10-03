@@ -39,7 +39,12 @@ defmodule Waffle.Storage.Google.CloudStorage do
       |> Keyword.put(:acl, acl)
       |> Enum.into(%{})
 
-    insert(conn(), bucket(definition), path, data(meta), gcs_options)
+    gcs_optional_params =
+      definition
+      |> get_gcs_optional_params(version, meta)
+      |> ensure_keyword_list()
+
+    insert(conn(), bucket(definition), path, data(meta), gcs_options, gcs_optional_params)
   end
 
   @doc """
@@ -118,7 +123,7 @@ defmodule Waffle.Storage.Google.CloudStorage do
   defp data({%{binary: data}, _}), do: {:binary, data}
 
   @spec insert(Tesla.Env.client, String.t, String.t, {:file | :binary, String.t}, String.t) :: object_or_error
-  defp insert(conn, bucket, name, {:file, path}, gcs_options) do
+  defp insert(conn, bucket, name, {:file, path}, gcs_options, gcs_optional_params) do
     object = %Object{name: name}
       |> Map.merge(gcs_options)
 
@@ -127,9 +132,11 @@ defmodule Waffle.Storage.Google.CloudStorage do
       bucket,
       "multipart",
       object,
-      path
+      path,
+      gcs_optional_params
     )
   end
+
   defp insert(conn, bucket, name, {:binary, data}, _gcs_options) do
     Util.storage_objects_insert(
       conn,
@@ -144,6 +151,15 @@ defmodule Waffle.Storage.Google.CloudStorage do
   defp get_gcs_options(definition, version, {file, scope}) do
     try do
       apply(definition, :gcs_object_headers, [version, {file, scope}])
+    rescue
+      UndefinedFunctionError ->
+        []
+    end
+  end
+
+  defp get_gcs_optional_params(definition, version, {file, scope}) do
+    try do
+      apply(definition, :gcs_optional_params, [version, {file, scope}])
     rescue
       UndefinedFunctionError ->
         []
