@@ -122,7 +122,7 @@ defmodule Waffle.Storage.Google.CloudStorage do
   defp data({%{binary: nil, path: path}, _}), do: {:file, path}
   defp data({%{binary: data}, _}), do: {:binary, data}
 
-  @spec insert(Tesla.Env.client, String.t, String.t, {:file | :binary, String.t}, String.t) :: object_or_error
+  @spec insert(Tesla.Env.client, String.t, String.t, {:file | :binary, String.t}, map(), list()) :: object_or_error
   defp insert(conn, bucket, name, {:file, path}, gcs_options, gcs_optional_params) do
     object = %Object{name: name}
       |> Map.merge(gcs_options)
@@ -134,17 +134,6 @@ defmodule Waffle.Storage.Google.CloudStorage do
       object,
       path,
       gcs_optional_params
-    )
-  end
-
-  defp insert(conn, bucket, name, {:binary, data}, _gcs_options) do
-    Util.storage_objects_insert(
-      conn,
-      bucket,
-      [
-        body: data,
-        name: name,
-      ]
     )
   end
 
