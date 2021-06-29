@@ -128,14 +128,13 @@ defmodule Waffle.Storage.Google.CloudStorage do
       path
     )
   end
-  defp insert(conn, bucket, name, {:binary, data}, _gcs_options) do
-    Util.storage_objects_insert(
+  defp insert(conn, bucket, name, {:binary, data}, acl) do
+    Objects.storage_objects_insert_iodata(
       conn,
       bucket,
-      [
-        body: data,
-        name: name,
-      ]
+      "multipart",
+      %Object{name: name, acl: acl},
+      data
     )
   end
 
