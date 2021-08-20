@@ -43,8 +43,7 @@ Add it to your mix dependencies:
 ```elixir
 defp deps do
   [
-    ...,
-    {:waffle_gcs, git: "https://github.com/almirsarajcic/waffle_gcs"}
+    {:waffle_gcs, "~> 0.1"}
   ]
 end
 ```
@@ -55,7 +54,7 @@ All configuration values are stored under the `:waffle` app key. E.g.
 
 ```elixir
 config :waffle,
-  storage: Waffle.Storage.Google,
+  storage: Waffle.Storage.Google.CloudStorage,
   bucket: "gcs-bucket",
   storage_dir: "uploads/waffle"
 ```
@@ -90,7 +89,7 @@ And configure it to use this new module instead of the default token generation:
 
 ```elixir
 config :waffle,
-  storage: Waffle.Storage.Google,
+  storage: Waffle.Storage.Google.CloudStorage,
   bucket: "gcs-bucket-name",
   token_fetcher: MyCredentials
 ```
