@@ -14,7 +14,7 @@ defmodule Waffle.Storage.Google.CloudStorageTest do
     %{name: name, path: "#{@remote_dir}/#{name}.png"}
   end
 
-  def create_wafile(_), do: %{wafile: Waffle.File.new(@file_path)}
+  def create_wafile(_), do: %{wafile: Waffle.File.new(@file_path, DummyDefinition)}
 
   def setup_waffle(%{wafile: file, name: name}) do
     %{

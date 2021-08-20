@@ -28,7 +28,7 @@ defmodule Waffle.Storage.Google.CloudStorage do
   Put a Waffle file in a Google Cloud Storage bucket.
   """
   @spec put(Types.definition, Types.version, Types.meta) :: object_or_error
-  def put(definition, version, {_file, scope} = meta) do
+  def put(definition, version, meta) do
     path = path_for(definition, version, meta)
     acl = definition.acl(version, meta)
 
@@ -44,16 +44,16 @@ defmodule Waffle.Storage.Google.CloudStorage do
       |> get_gcs_optional_params(version, meta)
       |> ensure_keyword_list()
 
-    insert(conn(scope), bucket(definition), path, data(meta), gcs_options, gcs_optional_params)
+    insert(conn(), bucket(definition), path, data(meta), gcs_options, gcs_optional_params)
   end
 
   @doc """
   Delete a file from a Google Cloud Storage bucket.
   """
   @spec delete(Types.definition, Types.version, Types.meta) :: object_or_error
-  def delete(definition, version, {_file, scope} = meta) do
+  def delete(definition, version, meta) do
     Objects.storage_objects_delete(
-      conn(scope),
+      conn(),
       bucket(definition),
       path_for(definition, version, meta) |> URI.encode_www_form()
     )
@@ -150,18 +150,18 @@ defmodule Waffle.Storage.Google.CloudStorage do
     )
   end
 
-  defp get_gcs_options(definition, version, {file, scope}) do
+  defp get_gcs_options(definition, version, meta) do
     try do
-      apply(definition, :gcs_object_headers, [version, {file, scope}])
+      apply(definition, :gcs_object_headers, [version, meta])
     rescue
       UndefinedFunctionError ->
         []
     end
   end
 
-  defp get_gcs_optional_params(definition, version, {file, scope}) do
+  defp get_gcs_optional_params(definition, version, meta) do
     try do
-      apply(definition, :gcs_optional_params, [version, {file, scope}])
+      apply(definition, :gcs_optional_params, [version, meta])
     rescue
       UndefinedFunctionError ->
         []
