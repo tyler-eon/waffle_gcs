@@ -43,7 +43,7 @@ Add it to your mix dependencies:
 ```elixir
 defp deps do
   [
-    {:waffle_gcs, "~> 0.1"}
+    {:waffle_gcs, "~> 0.2"}
   ]
 end
 ```
