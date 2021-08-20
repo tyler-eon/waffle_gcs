@@ -22,12 +22,12 @@ defmodule Waffle.Storage.Google.CloudStorage do
   alias Waffle.Storage.Google.Util
   alias Waffle.Types
 
-  @type object_or_error :: {:ok, GoogleApi.Storage.V1.Model.Object.t} | {:error, Tesla.Env.t}
+  @type object_or_error :: {:ok, GoogleApi.Storage.V1.Model.Object.t()} | {:error, Tesla.Env.t()}
 
   @doc """
   Put a Waffle file in a Google Cloud Storage bucket.
   """
-  @spec put(Types.definition, Types.version, Types.meta) :: object_or_error
+  @spec put(Types.definition(), Types.version(), Types.meta()) :: object_or_error
   def put(definition, version, meta) do
     path = path_for(definition, version, meta)
     acl = definition.acl(version, meta)
@@ -50,7 +50,7 @@ defmodule Waffle.Storage.Google.CloudStorage do
   @doc """
   Delete a file from a Google Cloud Storage bucket.
   """
-  @spec delete(Types.definition, Types.version, Types.meta) :: object_or_error
+  @spec delete(Types.definition(), Types.version(), Types.meta()) :: object_or_error
   def delete(definition, version, meta) do
     Objects.storage_objects_delete(
       conn(),
@@ -66,7 +66,7 @@ defmodule Waffle.Storage.Google.CloudStorage do
   application configs by setting `:url_builder` to any module that imlements the
   behavior of `Waffle.Storage.Google.Url`.
   """
-  @spec url(Types.definition, Types.version, Types.meta, Keyword.t) :: String.t
+  @spec url(Types.definition(), Types.version(), Types.meta(), Keyword.t()) :: String.t()
   def url(definition, version, meta, opts \\ []) do
     signer = Util.option(opts, :url_builder, Waffle.Storage.Google.UrlV2)
     signer.build(definition, version, meta, opts)
@@ -76,9 +76,10 @@ defmodule Waffle.Storage.Google.CloudStorage do
   Constructs a new connection object with scoped authentication. If no scope is
   provided, the `devstorage.full_control` scope is used as a default.
   """
-  @spec conn(String.t) :: Tesla.Env.client
+  @spec conn(String.t()) :: Tesla.Env.client()
   def conn(scope \\ @full_control_scope) do
-    token_store = Application.get_env(:waffle, :token_fetcher, Waffle.Storage.Google.Token.DefaultFetcher)
+    token_store =
+      Application.get_env(:waffle, :token_fetcher, Waffle.Storage.Google.Token.DefaultFetcher)
 
     token_store.get_token(scope)
     |> Connection.new()
@@ -87,13 +88,13 @@ defmodule Waffle.Storage.Google.CloudStorage do
   @doc """
   Returns the bucket for file uploads.
   """
-  @spec bucket(Types.definition) :: String.t
+  @spec bucket(Types.definition()) :: String.t()
   def bucket(definition), do: Util.var(definition.bucket())
 
   @doc """
   Returns the storage directory **within a bucket** to store the file under.
   """
-  @spec storage_dir(Types.definition, Types.version, Types.meta) :: String.t
+  @spec storage_dir(Types.definition(), Types.version(), Types.meta()) :: String.t()
   def storage_dir(definition, version, meta) do
     version
     |> definition.storage_dir(meta)
@@ -103,7 +104,7 @@ defmodule Waffle.Storage.Google.CloudStorage do
   @doc """
   Returns the full file path for the upload destination.
   """
-  @spec path_for(Types.definition, Types.version, Types.meta) :: String.t
+  @spec path_for(Types.definition(), Types.version(), Types.meta()) :: String.t()
   def path_for(definition, version, meta) do
     definition
     |> storage_dir(version, meta)
@@ -113,18 +114,26 @@ defmodule Waffle.Storage.Google.CloudStorage do
   @doc """
   A wrapper for `Waffle.Definition.Versioning.resolve_file_name/3`.
   """
-  @spec fullname(Types.definition, Types.version, Types.meta) :: String.t
+  @spec fullname(Types.definition(), Types.version(), Types.meta()) :: String.t()
   def fullname(definition, version, meta) do
     Waffle.Definition.Versioning.resolve_file_name(definition, version, meta)
   end
 
-  @spec data(Types.file) :: {:file | :binary, String.t}
+  @spec data(Types.file()) :: {:file | :binary, String.t()}
   defp data({%{binary: nil, path: path}, _}), do: {:file, path}
   defp data({%{binary: data}, _}), do: {:binary, data}
 
-  @spec insert(Tesla.Env.client, String.t, String.t, {:file | :binary, String.t}, map(), list()) :: object_or_error
+  @spec insert(
+          Tesla.Env.client(),
+          String.t(),
+          String.t(),
+          {:file | :binary, String.t()},
+          map(),
+          list()
+        ) :: object_or_error
   defp insert(conn, bucket, name, {:file, path}, gcs_options, gcs_optional_params) do
-    object = %Object{name: name}
+    object =
+      %Object{name: name}
       |> Map.merge(gcs_options)
 
     Objects.storage_objects_insert_simple(
@@ -136,8 +145,10 @@ defmodule Waffle.Storage.Google.CloudStorage do
       gcs_optional_params
     )
   end
+
   defp insert(conn, bucket, name, {:binary, data}, gcs_options, gcs_optional_params) do
-    object = %Object{name: name}
+    object =
+      %Object{name: name}
       |> Map.merge(gcs_options)
 
     Objects.storage_objects_insert_iodata(

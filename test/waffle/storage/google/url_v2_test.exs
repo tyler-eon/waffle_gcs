@@ -14,7 +14,7 @@ defmodule Waffle.Storage.Google.UrlV2Test do
 
     test "respects minimum and maximum values" do
       assert 1 == UrlV2.expiry(expires_in: -100)
-      assert 604800 == UrlV2.expiry(expires_in: 9999999999)
+      assert 604_800 == UrlV2.expiry(expires_in: 9_999_999_999)
     end
   end
 

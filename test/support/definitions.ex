@@ -5,12 +5,14 @@ defmodule DummyDefBase do
 
       def acl(_, {_, :private}), do: :private
 
-      def filename(_, {file, :private}), do: Path.basename(file.file_name, Path.extname(file.file_name))
+      def filename(_, {file, :private}),
+        do: Path.basename(file.file_name, Path.extname(file.file_name))
+
       def filename(_, {_, name}) when is_binary(name), do: name
 
       def storage_dir(_, _), do: "waffle-test"
 
-      defoverridable [acl: 2, filename: 2, storage_dir: 2]
+      defoverridable acl: 2, filename: 2, storage_dir: 2
     end
   end
 end
