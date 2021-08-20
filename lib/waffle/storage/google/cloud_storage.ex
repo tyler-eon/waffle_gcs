@@ -136,6 +136,19 @@ defmodule Waffle.Storage.Google.CloudStorage do
       gcs_optional_params
     )
   end
+  defp insert(conn, bucket, name, {:binary, data}, gcs_options, gcs_optional_params) do
+    object = %Object{name: name}
+      |> Map.merge(gcs_options)
+
+    Objects.storage_objects_insert_iodata(
+      conn,
+      bucket,
+      "multipart",
+      object,
+      data,
+      gcs_optional_params
+    )
+  end
 
   defp get_gcs_options(definition, version, {file, scope}) do
     try do
