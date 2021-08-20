@@ -1,6 +1,6 @@
 # Waffle GCS
 
-[![Build Status](https://travis-ci.org/kolorahl/waffle_gcs.svg?branch=master)](https://travis-ci.org/kolorahl/waffle_gcs)
+[![Build Status](https://github.com/almirsarajcic/waffle_gcs/actions/workflows/elixir.yml/badge.svg?branch=master)](https://github.com/almirsarajcic/waffle_gcs/actions)
 
 Google Cloud Storage for Waffle
 
