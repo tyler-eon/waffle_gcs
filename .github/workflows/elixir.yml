@@ -1,0 +1,66 @@
+name: Elixir CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  GCP_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
+  WAFFLE_BUCKET: ${{ secrets.WAFFLE_BUCKET }}
+
+jobs:
+  build:
+
+    name: Build and test (OTP ${{ matrix.otp }} | Elixir ${{ matrix.elixir }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        include:
+          - elixir: 1.9.4
+            otp: 21.3.8.24
+
+          - elixir: 1.10.4
+            otp: 21.3.8.24
+
+          - elixir: 1.11.4
+            otp: 21.3.8.24
+
+          - elixir: 1.11.4
+            otp: 23.3.4.4
+
+          - elixir: 1.12.2
+            otp: 24.0.3
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Elixir
+      uses: erlef/setup-elixir@v1.9.0
+      with:
+        elixir-version: ${{ matrix.elixir }}
+        otp-version: ${{ matrix.otp }}
+
+    - name: Restore dependencies cache
+      uses: actions/cache@v2
+      id: mix-cache
+      with:
+        path: deps
+        key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-mix-${{ hashFiles('**/mix.lock') }}
+        restore-keys: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-mix-
+
+    - name: Install dependencies
+      run: mix deps.get --only test
+
+    - name: Compile & lint dependencies
+      run: mix compile --warnings-as-errors
+      env:
+        MIX_ENV: test
+
+    - name: Check Formatting
+      run: mix format --check-formatted
+
+    - name: Run tests
+      run: mix test
