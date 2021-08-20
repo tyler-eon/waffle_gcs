@@ -119,7 +119,7 @@ defmodule Waffle.Storage.Google.CloudStorage do
     Waffle.Definition.Versioning.resolve_file_name(definition, version, meta)
   end
 
-  @spec data(Types.file()) :: {:file | :binary, String.t()}
+  @spec data({Types.file(), String.t()}) :: {:file | :binary, String.t()}
   defp data({%{binary: nil, path: path}, _}), do: {:file, path}
   defp data({%{binary: data}, _}), do: {:binary, data}
 
