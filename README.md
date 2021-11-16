@@ -55,7 +55,7 @@ All configuration values are stored under the `:waffle` app key. E.g.
 
 ```elixir
 config :waffle,
-  storage: Waffle.Storage.Google,
+  storage: Waffle.Storage.Google.CloudStorage,
   bucket: "gcs-bucket",
   storage_dir: "uploads/waffle"
 ```
