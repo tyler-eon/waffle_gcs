@@ -79,18 +79,9 @@ defmodule Waffle.Storage.Google.UrlV2 do
 
   @spec build_signed_url(Types.definition, String.t, Keyword.t) :: String.t
   defp build_signed_url(definition, path, options) do
-    {:ok, client_id} = Goth.Config.get(:client_email)
-
-    expiration = System.os_time(:second) + expiry(options)
-
-    signature = definition
-    |> build_path(path)
-    |> canonical_request(expiration)
-    |> sign_request()
-
-    base_url = build_url(definition, path)
-
-    "#{base_url}?GoogleAccessId=#{client_id}&Expires=#{expiration}&Signature=#{signature}"
+    client = GcsSignedUrl.Client.load_from_file(definition.service_account_path())
+    opts = [expires: @default_expiry] |> Keyword.merge(options)
+    GcsSignedUrl.generate_v4(client, CloudStorage.bucket(definition), path, opts)
   end
 
   @spec build_path(Types.definition, String.t) :: String.t
@@ -111,32 +102,5 @@ defmodule Waffle.Storage.Google.UrlV2 do
     definition
     |> CloudStorage.bucket()
     |> Path.join(path)
-  end
-
-  @spec canonical_request(String.t, pos_integer) :: String.t
-  defp canonical_request(resource, expiration) do
-    "GET\n\n\n#{expiration}\n#{resource}"
-  end
-
-  @spec sign_request(String.t) :: String.t
-  defp sign_request(request) do
-    {:ok, pem_bin} = Goth.Config.get("private_key")
-    [pem_key_data] = :public_key.pem_decode(pem_bin)
-    otp_release = System.otp_release() |> String.to_integer()
-
-    rsa_key =
-      case otp_release do
-        n when n >= 21 ->
-          :public_key.pem_entry_decode(pem_key_data)
-
-        _ ->
-          pem_key = :public_key.pem_entry_decode(pem_key_data)
-          :public_key.der_decode(:RSAPrivateKey, elem(pem_key, 3))
-      end
-
-    request
-    |> :public_key.sign(:sha256, rsa_key)
-    |> Base.encode64()
-    |> URI.encode_www_form()
   end
 end

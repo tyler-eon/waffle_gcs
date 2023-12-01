@@ -3,12 +3,6 @@ defmodule Waffle.Storage.Google.Util do
   A collection of utility functions.
   """
 
-  alias GoogleApi.Gax.{Request, Response}
-  alias GoogleApi.Storage.V1.Connection
-  alias GoogleApi.Storage.V1.Model.Object
-
-  @library_version Mix.Project.config() |> Keyword.get(:version, "")
-
   @doc """
   Accepts four forms of variables:
 
