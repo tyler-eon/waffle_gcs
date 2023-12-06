@@ -105,18 +105,10 @@ defmodule Waffle.Storage.Google.CloudStorage do
   Returns the full file path for the upload destination.
   """
   @spec path_for(Types.definition(), Types.version(), Types.meta()) :: String.t()
-  def path_for(definition, version, meta) do
+  def path_for(definition, version, meta = {file, _scope}) do
     definition
     |> storage_dir(version, meta)
-    |> Path.join(fullname(definition, version, meta))
-  end
-
-  @doc """
-  A wrapper for `Waffle.Definition.Versioning.resolve_file_name/3`.
-  """
-  @spec fullname(Types.definition(), Types.version(), Types.meta()) :: String.t()
-  def fullname(definition, version, meta) do
-    Waffle.Definition.Versioning.resolve_file_name(definition, version, meta)
+    |> Path.join(file.file_name)
   end
 
   @spec data({Types.file(), String.t()}) :: {:file | :binary, String.t()}
