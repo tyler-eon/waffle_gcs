@@ -1,7 +1,7 @@
 defmodule Waffle.Storage.Google.UtilTest do
   use ExUnit.Case, async: true
 
-  alias Waffle.Storage.Google.{CloudStorage, Util}
+  alias Waffle.Storage.Google.Util
 
   @app_key :_test
   @app_test "app env test"
@@ -67,28 +67,6 @@ defmodule Waffle.Storage.Google.UtilTest do
 
     test "does nothing if a string starts with a forward slash" do
       assert "/test/path" == Util.prepend_slash("/test/path")
-    end
-  end
-
-  describe "storage_objects_insert/4" do
-    test "uploads raw binary data to a Google Cloud Storage bucket" do
-      conn = CloudStorage.conn()
-      bucket = CloudStorage.bucket(DummyDefinition)
-      name = "test.txt"
-      bin  = "this is a test"
-      assert {:ok, _} = Util.storage_objects_insert(
-        conn,
-        bucket,
-        [
-          body: bin,
-          name: name,
-        ]
-      )
-      assert {:ok, _} = GoogleApi.Storage.V1.Api.Objects.storage_objects_get(
-        conn,
-        bucket,
-        name
-      )
     end
   end
 end

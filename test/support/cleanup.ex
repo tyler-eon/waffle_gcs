@@ -21,13 +21,15 @@ defmodule Cleanup do
 
   def delete_objects(_conn, _bucket, errors, %{items: []}), do: errors
   def delete_objects(_conn, _bucket, errors, %{items: nil}), do: errors
+
   def delete_objects(conn, bucket, errors, %{items: items, nextPageToken: next}) do
-    errors = Enum.reduce(items, errors, fn %{name: name}, errs ->
-      case Objects.storage_objects_delete(conn, bucket, name) do
-        {:ok, _} -> errs
-        {:error, err} -> [err | errs]
-      end
-    end)
+    errors =
+      Enum.reduce(items, errors, fn %{name: name}, errs ->
+        case Objects.storage_objects_delete(conn, bucket, name) do
+          {:ok, _} -> errs
+          {:error, err} -> [err | errs]
+        end
+      end)
 
     case next do
       nil -> errors

@@ -21,7 +21,7 @@ defmodule Waffle.Storage.Google.UrlV2 do
   @min_expiry 1
 
   # Maximum expiration time is 7 days from the creation of the signed URL
-  @max_expiry 604800
+  @max_expiry 604_800
 
   # The official Google Cloud Storage host
   @endpoint "storage.googleapis.com"
@@ -30,7 +30,7 @@ defmodule Waffle.Storage.Google.UrlV2 do
   Returns the amount of time, in seconds, before a signed URL becomes invalid.
   Assumes the key for the option is `:expires_in`.
   """
-  @spec expiry(Keyword.t) :: pos_integer
+  @spec expiry(Keyword.t()) :: pos_integer
   def expiry(opts \\ []) do
     case Util.option(opts, :expires_in, @default_expiry) do
       val when val < @min_expiry -> @min_expiry
@@ -43,13 +43,13 @@ defmodule Waffle.Storage.Google.UrlV2 do
   Determines whether or not the URL should be signed. Assumes the key for the
   option is `:signed`.
   """
-  @spec signed?(Keyword.t) :: boolean
+  @spec signed?(Keyword.t()) :: boolean
   def signed?(opts \\ []), do: Util.option(opts, :signed, false)
 
   @doc """
   Returns the remote asset host. The config key is assumed to be `:asset_host`.
   """
-  @spec endpoint(Keyword.t) :: String.t
+  @spec endpoint(Keyword.t()) :: String.t()
   def endpoint(opts \\ []) do
     opts
     |> Util.option(:asset_host, @endpoint)
@@ -67,7 +67,7 @@ defmodule Waffle.Storage.Google.UrlV2 do
     end
   end
 
-  @spec build_url(Types.definition, String.t) :: String.t
+  @spec build_url(Types.definition(), String.t()) :: String.t()
   defp build_url(definition, path) do
     %URI{
       host: endpoint(),
@@ -77,48 +77,50 @@ defmodule Waffle.Storage.Google.UrlV2 do
     |> URI.to_string()
   end
 
-  @spec build_signed_url(Types.definition, String.t, Keyword.t) :: String.t
+  @spec build_signed_url(Types.definition(), String.t(), Keyword.t()) :: String.t()
   defp build_signed_url(definition, path, options) do
     {:ok, client_id} = Goth.Config.get(:client_email)
 
     expiration = System.os_time(:second) + expiry(options)
 
-    signature = definition
-    |> build_path(path)
-    |> canonical_request(expiration)
-    |> sign_request()
+    signature =
+      definition
+      |> build_path(path)
+      |> canonical_request(expiration)
+      |> sign_request()
 
     base_url = build_url(definition, path)
 
     "#{base_url}?GoogleAccessId=#{client_id}&Expires=#{expiration}&Signature=#{signature}"
   end
 
-  @spec build_path(Types.definition, String.t) :: String.t
+  @spec build_path(Types.definition(), String.t()) :: String.t()
   defp build_path(definition, path) do
-    path = if endpoint() != @endpoint do
-      path
-    else
-      bucket_and_path(definition, path)
-    end
+    path =
+      if endpoint() != @endpoint do
+        path
+      else
+        bucket_and_path(definition, path)
+      end
 
     path
     |> Util.prepend_slash()
     |> URI.encode()
   end
 
-  @spec bucket_and_path(Types.definition, String.t) :: String.t
+  @spec bucket_and_path(Types.definition(), String.t()) :: String.t()
   defp bucket_and_path(definition, path) do
     definition
     |> CloudStorage.bucket()
     |> Path.join(path)
   end
 
-  @spec canonical_request(String.t, pos_integer) :: String.t
+  @spec canonical_request(String.t(), pos_integer) :: String.t()
   defp canonical_request(resource, expiration) do
     "GET\n\n\n#{expiration}\n#{resource}"
   end
 
-  @spec sign_request(String.t) :: String.t
+  @spec sign_request(String.t()) :: String.t()
   defp sign_request(request) do
     {:ok, pem_bin} = Goth.Config.get("private_key")
     [pem_key_data] = :public_key.pem_decode(pem_bin)

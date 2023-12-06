@@ -3,12 +3,6 @@ defmodule Waffle.Storage.Google.Util do
   A collection of utility functions.
   """
 
-  alias GoogleApi.Gax.{Request, Response}
-  alias GoogleApi.Storage.V1.Connection
-  alias GoogleApi.Storage.V1.Model.Object
-
-  @library_version Mix.Project.config() |> Keyword.get(:version, "")
-
   @doc """
   Accepts four forms of variables:
 
@@ -37,7 +31,7 @@ defmodule Waffle.Storage.Google.Util do
   If the value is not found in any of those location, an optional default value
   can be returned.
   """
-  @spec option(Keyword.t, any, any) :: any
+  @spec option(Keyword.t(), any, any) :: any
   def option(opts, key, default \\ nil) do
     case Keyword.get(opts, key) do
       nil -> Application.get_env(:waffle, key, default)
@@ -57,7 +51,7 @@ defmodule Waffle.Storage.Google.Util do
       > prepend_slash("/im/good")
       "/im/good"
   """
-  @spec prepend_slash(String.t) :: String.t
+  @spec prepend_slash(String.t()) :: String.t()
   def prepend_slash("/" <> _rest = path), do: path
   def prepend_slash(path), do: "/#{path}"
 end

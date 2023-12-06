@@ -14,13 +14,13 @@ defmodule Waffle.Storage.Google.CloudStorageTest do
     %{name: name, path: "#{@remote_dir}/#{name}.png"}
   end
 
-  def create_wafile(_), do: %{wafile: Waffle.File.new(@file_path)}
+  def create_wafile(_), do: %{wafile: Waffle.File.new(@file_path, DummyDefinition)}
 
   def setup_waffle(%{wafile: file, name: name}) do
     %{
       definition: DummyDefinition,
       version: :original,
-      meta: {file, name},
+      meta: {file, name}
     }
   end
 
@@ -31,7 +31,7 @@ defmodule Waffle.Storage.Google.CloudStorageTest do
     # `on_exit/1` function to register a callback that executes after each
     # individual test runs.
     if Version.compare(System.version(), "1.8.0") == :lt do
-      on_exit(fn -> IO.puts("Cleanup invokved (#{inspect self()})") end)
+      on_exit(fn -> IO.puts("Cleanup invokved (#{inspect(self())})") end)
     else
       :ok
     end
@@ -43,7 +43,8 @@ defmodule Waffle.Storage.Google.CloudStorageTest do
     end
 
     test "constructs a Tesla client with a custom scope" do
-      assert %Tesla.Client{} = CloudStorage.conn("https://www.googleapis.com/auth/devstorage.read_only")
+      assert %Tesla.Client{} =
+               CloudStorage.conn("https://www.googleapis.com/auth/devstorage.read_only")
     end
   end
 
@@ -55,11 +56,20 @@ defmodule Waffle.Storage.Google.CloudStorageTest do
       assert "invalid" == CloudStorage.bucket(DummyDefinitionInvalidBucket)
     end
 
-    test "storage_dir/3 returns the remote storage directory (not the bucket)", %{definition: def, version: ver, meta: meta} do
+    test "storage_dir/3 returns the remote storage directory (not the bucket)", %{
+      definition: def,
+      version: ver,
+      meta: meta
+    } do
       assert @remote_dir == CloudStorage.storage_dir(def, ver, meta)
     end
 
-    test "path_for/3 returns the file full path (storage directory plus filename)", %{definition: def, version: ver, meta: meta, path: path} do
+    test "path_for/3 returns the file full path (storage directory plus filename)", %{
+      definition: def,
+      version: ver,
+      meta: meta,
+      path: path
+    } do
       assert path == CloudStorage.path_for(def, ver, meta)
     end
   end
@@ -72,19 +82,32 @@ defmodule Waffle.Storage.Google.CloudStorageTest do
     end
 
     test "put/3 uploads binary data", %{definition: def, version: ver, name: name} do
-      assert {:ok, _} = CloudStorage.put(def, ver, {%Waffle.File{binary: File.read!(@file_path), file_name: "#{name}.png"}, name})
+      assert {:ok, _} =
+               CloudStorage.put(
+                 def,
+                 ver,
+                 {%Waffle.File{binary: File.read!(@file_path), file_name: "#{name}.png"}, name}
+               )
     end
 
     test "put/3 fails for an invalid file", %{version: ver, meta: meta} do
       assert {:error, _} = CloudStorage.put(DummyDefinitionInvalidBucket, ver, meta)
     end
 
-    test "delete/3 successfully deletes existing object", %{definition: def, version: ver, meta: meta} do
+    test "delete/3 successfully deletes existing object", %{
+      definition: def,
+      version: ver,
+      meta: meta
+    } do
       assert {:ok, _} = CloudStorage.put(def, ver, meta)
       assert {:ok, _} = CloudStorage.delete(def, ver, meta)
     end
 
-    test "delete/3 fails for invalid bucket or object", %{definition: def, version: ver, meta: meta} do
+    test "delete/3 fails for invalid bucket or object", %{
+      definition: def,
+      version: ver,
+      meta: meta
+    } do
       assert {:error, _} = CloudStorage.delete(def, ver, meta)
       assert {:error, _} = CloudStorage.delete(DummyDefinitionInvalidBucket, ver, meta)
     end
@@ -95,15 +118,21 @@ defmodule Waffle.Storage.Google.CloudStorageTest do
 
     test "url/3 returns signed URLs (v2)", %{definition: def, version: ver, meta: meta} do
       assert {:ok, _} = CloudStorage.put(def, ver, meta)
-      url = CloudStorage.url(def, ver, meta, [signed: true])
+      url = CloudStorage.url(def, ver, meta, signed: true)
       assert url =~ "&Signature="
       assert {:ok, %{status_code: 200}} = HTTPoison.get(url)
     end
 
-    test "url/3 returns CDN URL without bucket name in path", %{definition: def, version: ver, meta: meta, name: name} do
+    test "url/3 returns CDN URL without bucket name in path", %{
+      definition: def,
+      version: ver,
+      meta: meta,
+      name: name
+    } do
       Application.put_env(:waffle, :asset_host, "cdn-domain.com")
 
-      assert CloudStorage.url(def, ver, meta) == "https://cdn-domain.com/#{@remote_dir}/#{name}.png"
+      assert CloudStorage.url(def, ver, meta) ==
+               "https://cdn-domain.com/#{@remote_dir}/#{name}.png"
 
       Application.delete_env(:waffle, :asset_host)
     end

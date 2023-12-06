@@ -1,6 +1,6 @@
 # Waffle GCS
 
-[![Build Status](https://travis-ci.org/kolorahl/waffle_gcs.svg?branch=master)](https://travis-ci.org/kolorahl/waffle_gcs)
+[![Build Status](https://github.com/almirsarajcic/waffle_gcs/actions/workflows/elixir.yml/badge.svg?branch=master)](https://github.com/almirsarajcic/waffle_gcs/actions)
 
 Google Cloud Storage for Waffle
 
@@ -43,8 +43,7 @@ Add it to your mix dependencies:
 ```elixir
 defp deps do
   [
-    ...,
-    {:waffle_gcs, "~> 0.1"}
+    {:waffle_gcs, "~> 0.2"}
   ]
 end
 ```
@@ -55,7 +54,7 @@ All configuration values are stored under the `:waffle` app key. E.g.
 
 ```elixir
 config :waffle,
-  storage: Waffle.Storage.Google,
+  storage: Waffle.Storage.Google.CloudStorage,
   bucket: "gcs-bucket",
   storage_dir: "uploads/waffle"
 ```
@@ -66,6 +65,34 @@ hard-coded string (e.g. `"gcs-bucket"`) or a system env tuple (e.g.
 module (e.g. `def bucket(), do: "my-bucket"`).
 
 Authentication is done through Goth which requires credentials (https://github.com/peburrows/goth#installation).
+
+### Custom Token Generation ###
+
+By default, the credentials provided to Goth will be used to generate tokens.
+If you have multiple sets of credentials in Goth or otherwise need more control
+over token generation, you can define your own module:
+
+```elixir
+defmodule MyCredentials do
+  @behaviour Waffle.Storage.Google.Token.Fetcher
+  @impl Waffle.Storage.Google.Token.Fetcher
+  def get_token(scopes) when is_list(scopes), do: get_token(Enum.join(scopes, " "))
+  @impl Waffle.Storage.Google.Token.Fetcher
+  def get_token(scope) when is_binary(scope) do
+    {:ok, token} = Goth.Token.for_scope({"my-user@my-gcs-account.com", scope})
+    token.token
+  end
+end
+```
+
+And configure it to use this new module instead of the default token generation:
+
+```elixir
+config :waffle,
+  storage: Waffle.Storage.Google.CloudStorage,
+  bucket: "gcs-bucket-name",
+  token_fetcher: MyCredentials
+```
 
 ## URL Signing
 
@@ -88,3 +115,15 @@ end
 ```
 
 The list of all the supported attributes can be found here: https://hexdocs.pm/google_api_storage/GoogleApi.Storage.V1.Model.Object.html.
+
+## GCS optional params
+
+You can specify optional params by defining `gcs_optional_params/2` in your definition, which returns keywords list, E.g:
+
+```
+def gcs_optional_params(_version, {_file, _scope}) do
+  [predefinedAcl: "publicRead"]
+end
+```
+
+It will be used as `optional_params` argument in gcs request. List of all supported attributes can be found here: https://hexdocs.pm/google_api_storage/GoogleApi.Storage.V1.Api.Objects.html#storage_objects_insert_simple/7
